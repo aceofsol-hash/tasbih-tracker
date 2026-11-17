@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tasbih Tracker</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#F5F2EA;color:#14201B;font-family:system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;overscroll-behavior:none}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+#app{height:100%;display:flex;flex-direction:column}
+main{flex:1;overflow-y:auto;padding:24px 20px 28px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+h2{margin:0;font-size:17px;font-weight:700}
+.sub{font-size:14px;font-weight:500;color:#5A6660}
+.row{display:flex;align-items:center}
+.between{justify-content:space-between}
+.card{background:#fff;border:1px solid #E1DCCF;border-radius:20px;padding:16px}
+.chip{border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.dark{background:#0F5A47;color:#fff;font-size:14px;padding:8px 14px}
+.chip.ok{background:#DCEBE4;color:#0F5A47}
+.chip.wait{background:#F3E2B8;color:#5C3F00}
+.btn{min-height:56px;border:0;border-radius:18px;background:#0F5A47;color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+.btn.soft{background:#DCEBE4;color:#0F5A47;border:2px solid #0F5A47}
+.btn.line{background:#fff;color:#0F5A47;border:2px solid #0F5A47;min-height:48px;font-size:15px}
+.small{min-height:44px;padding:0 18px;border-radius:12px;border:0;background:#DCEBE4;color:#0F5A47;font-size:14px;font-weight:600}
+.link{background:none;border:0;min-height:44px;color:#0F5A47;font-size:14px;font-weight:600;padding:0 4px}
+.round{width:44px;height:44px;border-radius:22px;border:1px solid #E1DCCF;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+nav{display:flex;background:#fff;border-top:1px solid #E1DCCF;padding:8px 8px 8px}
+nav button{flex:1;min-height:56px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:#5A6660}
+nav .pill{width:56px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+nav button.on{color:#0F5A47}
+nav button.on .pill{background:#DCEBE4}
+.hero{background:#0F5A47;border-radius:24px;padding:22px 20px;display:flex;align-items:center;gap:22px;color:#fff}
+.stat{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:#CFE3DA}
+.stat b{font-size:20px;color:#fff}
+.stat.w,.stat.w b{color:#F5E3B0}
+.rule{height:1px;background:#2F7A66}
+.prow{background:#fff;border:1px solid #E1DCCF;border-radius:16px;padding:8px 8px 8px 16px;min-height:60px;display:flex;align-items:center;gap:12px}
+.prow .n{flex:1;min-width:0}
+.prow .n b{display:block;font-size:16px;font-weight:600}
+.prow .n span{font-size:13px;color:#5A6660}
+.strip{display:flex;flex-wrap:wrap;gap:5px}
+.s{width:16px;height:16px;border-radius:5px;background:#E8E3D6}
+.s.full{background:#0F5A47}
+.s.partial{background:#F0D58A}
+.s.missed{background:#fff;border:2px dashed #A33A24}
+.s.today{border:2px solid #14201B;background:#fff}
+.s.today.full{background:#0F5A47}
+.s.today.partial{background:#F0D58A}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px;background:#E8E3D6}
+.legend i.full{background:#0F5A47}
+.legend i.partial{background:#F0D58A}
+.legend i.missed{background:#fff;border:2px dashed #A33A24}
+.legend i.today{background:#fff;border:2px solid #14201B}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px 4px}
+.wd{text-align:center;font-size:12px;font-weight:600;color:#5A6660}
+.day{height:44px;width:100%;border-radius:14px;border:0;background:none;font-size:15px;font-weight:500;color:#5A6660;display:flex;align-items:center;justify-content:center;padding:0}
+.day.full{background:#0F5A47;color:#fff;font-weight:600}
+.day.partial{background:#F0D58A;color:#3F2C00;font-weight:600}
+.day.missed{border:2px dashed #A33A24;background:#fff;color:#A33A24;font-weight:600}
+.day.today{border:3px solid #14201B;background:#fff;color:#14201B;font-weight:800;font-size:17px}
+.day.today.full{background:#0F5A47;color:#fff}
+.day.today.partial{background:#F0D58A;color:#14201B}
+.day.sel:not(.today){outline:2px solid #14201B;outline-offset:2px}
+.drow{display:flex;align-items:center;gap:12px;min-height:44px;border-top:1px solid #EEEADF;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;padding:0;text-align:left}
+.tick{width:22px;height:22px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center}
+.tick.on{background:#0F5A47}
+.tick.off{border:2px solid #8A6A1F}
+.mrow{min-height:68px;width:100%;text-align:left;background:#fff;border:1px solid #E1DCCF;border-radius:16px;padding:10px 12px 10px 16px;display:flex;align-items:center;gap:10px}
+.mrow b{display:block;font-size:16px;font-weight:600}
+.mrow span{font-size:13px;color:#5A6660}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label,.field .lbl{font-size:14px;font-weight:600;color:#5A6660}
+.inp{height:52px;width:100%;border:1px solid #C9C3B3;border-radius:14px;background:#fff;padding:0 16px;font-size:17px}
+.step{width:52px;height:52px;border-radius:14px;border:1px solid #C9C3B3;background:#fff;display:flex;align-items:center;justify-content:center;padding:0;flex:none}
+.preset{flex:1;min-height:44px;border-radius:22px;border:1px solid #C9C3B3;background:#fff;font-size:15px;font-weight:600}
+.preset.on{background:#0F5A47;border-color:#0F5A47;color:#fff}
+.dchip{width:44px;height:44px;border-radius:22px;border:1px solid #C9C3B3;background:#fff;font-size:15px;font-weight:700;padding:0;color:#5A6660}
+.dchip.on{background:#0F5A47;border-color:#0F5A47;color:#fff}
+.sw{width:56px;height:32px;border-radius:16px;border:0;background:#C9C3B3;padding:3px;display:flex;justify-content:flex-start;flex:none}
+.sw.on{background:#0F5A47;justify-content:flex-end}
+.sw span{width:26px;height:26px;border-radius:13px;background:#fff;display:block}
+.empty{text-align:center;padding:28px 18px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty p{margin:0;color:#5A6660;font-size:15px;line-height:1.4}
+.pager{position:relative;touch-action:pan-y}
+.pager .peek{position:absolute;top:24px;bottom:24px;width:40px;border-radius:24px;background:#E6E1D3}
+.pcard{position:relative;margin:0 14px;background:#fff;border:1px solid #E1DCCF;border-radius:28px;padding:22px;display:flex;flex-direction:column;gap:14px;min-height:430px}
+.pname{font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.2;text-align:center}
+.pcount{font-size:96px;font-weight:700;letter-spacing:-.04em;line-height:1;color:#0F5A47;text-align:center}
+.dots{display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:4px;border:2px solid #8A6A1F}
+.dot.done{background:#0F5A47;border-color:#0F5A47}
+.dot.cur{width:24px;background:#8A6A1F}
+.dot.cur.done{background:#0F5A47}
+#counter{position:fixed;inset:0;background:#0F5A47;color:#fff;z-index:10;display:flex;flex-direction:column;padding:20px}
+#counter .tap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:0;background:none;color:#fff}
+#counter .big{font-size:150px;font-weight:700;letter-spacing:-.04em;line-height:1}
+#counter .of{font-size:20px;color:#CFE3DA}
+#counter .tb{display:flex;gap:10px}
+#counter .tb button{flex:1;min-height:52px;border-radius:16px;border:2px solid #CFE3DA;background:transparent;color:#fff;font-size:16px;font-weight:600}
+#counter .fin{min-height:60px;border-radius:18px;border:0;background:#F5E3B0;color:#14201B;font-size:18px;font-weight:700;margin-bottom:10px}
+#toast{position:fixed;left:20px;right:20px;bottom:90px;background:#14201B;color:#fff;border-radius:14px;padding:14px 16px;font-size:15px;text-align:center;z-index:20}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+var KEY = 'tasbih_state_v1';
+var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var DS = ['S','M','T','W','T','F','S'];
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var C = 2 * Math.PI * 46;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function keyOf(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function todayKey() { return keyOf(new Date()); }
+function parseKey(k) { var p = k.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+function longDate(d) { return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+function svg(p, s, c, w) {
+  s = s || 22; c = c || 'currentColor'; w = w || 1.8;
+  return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+}
+var I = {
+  home: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  today: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16 9.5"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  left: '<path d="M15 6l-6 6 6 6"/>',
+  right: '<path d="M9 6l6 6-6 6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  bell: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  count: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>'
+};
+
+/* ---------- state ---------- */
+function norm(o) {
+  var s = o.settings || {};
+  return {
+    tasbih: o.tasbih || [],
+    log: o.log || {},
+    progress: o.progress || {},
+    settings: { checkin: s.checkin !== false, checkinTime: s.checkinTime || '21:30' },
+    firstUse: o.firstUse || todayKey()
+  };
+}
+function load() {
+  var raw = '';
+  try { if (window.Android) raw = Android.loadState(); } catch (e) {}
+  if (!raw) { try { raw = localStorage.getItem(KEY) || ''; } catch (e) {} }
+  try { var o = JSON.parse(raw); if (o && typeof o === 'object') return norm(o); } catch (e) {}
+  return norm({});
+}
+var S = load();
+function save(resched) {
+  var j = JSON.stringify(S);
+  try { localStorage.setItem(KEY, j); } catch (e) {}
+  try { if (window.Android) { if (resched) Android.sync(j); else Android.save(j); } } catch (e) {}
+}
+function vib(ms) { try { if (window.Android) Android.vibrate(ms); } catch (e) {} }
+
+/* ---------- data helpers ---------- */
+function activeOn(k) {
+  var dow = parseKey(k).getDay();
+  return S.tasbih.filter(function (t) { return t.days.indexOf(dow) >= 0 && t.created <= k; });
+}
+function isDone(k, id) { return !!(S.log[k] && S.log[k][id]); }
+function dayStat(k) {
+  var t = todayKey();
+  var act = activeOn(k);
+  var done = act.filter(function (x) { return isDone(k, x.id); }).length;
+  var st = 'none';
+  if (k > t) st = 'future';
+  else if (act.length === 0 || k < S.firstUse) st = 'none';
+  else if (done === act.length) st = 'full';
+  else if (done > 0) st = 'partial';
+  else st = (k === t) ? 'pending' : 'missed';
+  return { act: act, done: done, st: st };
+}
+function setDone(k, id, val) {
+  S.log[k] = S.log[k] || {};
+  if (val) S.log[k][id] = true; else delete S.log[k][id];
+  if (!Object.keys(S.log[k]).length) delete S.log[k];
+  delete S.progress[k + '|' + id];
+  save(true);
+}
+
+/* ---------- ui state ---------- */
+var view = 'home', todayIdx = 0, counter = null, draft = null, confirmDel = false;
+var selDate = todayKey();
+var vm = { y: new Date().getFullYear(), m: new Date().getMonth() };
+var lastDay = todayKey();
+
+function go(v) {
+  view = v;
+  if (v === 'calendar') { selDate = todayKey(); var n = new Date(); vm = { y: n.getFullYear(), m: n.getMonth() }; }
+  render(true);
+}
+function toast(msg) {
+  var old = document.getElementById('toast'); if (old) old.remove();
+  var d = document.createElement('div'); d.id = 'toast'; d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function () { d.remove(); }, 2200);
+}
+
+/* ---------- views ---------- */
+function vHome() {
+  var k = todayKey(), st = dayStat(k), act = st.act;
+  var pend = act.filter(function (t) { return !isDone(k, t.id); });
+  var h = '<div><div class="sub">' + DAYS[new Date().getDay()] + '</div><h1>' + new Date().getDate() + ' ' + MONTHS[new Date().getMonth()] + '</h1></div>';
+  if (!S.tasbih.length) {
+    return h + '<div class="card empty"><h2>No tasbih yet</h2><p>Add the tasbih you recite every day, with a count and a reminder time.</p><button class="btn" onclick="editTasbih(null)">' + svg(I.plus, 20, '#fff', 2.2) + 'Add tasbih</button></div>';
+  }
+  var total = act.length, done = st.done;
+  var dash = total ? (done / total) * C : 0;
+  h += '<div class="hero"><div style="position:relative;width:112px;height:112px;flex:none">' +
+    '<svg width="112" height="112" viewBox="0 0 112 112" role="img" aria-label="' + done + ' of ' + total + ' done today"><circle cx="56" cy="56" r="46" fill="none" stroke="#2F7A66" stroke-width="10"/>' +
+    '<circle cx="56" cy="56" r="46" fill="none" stroke="#F5E3B0" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + C + '" transform="rotate(-90 56 56)"/></svg>' +
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:28px;font-weight:700;line-height:1">' + done + '/' + total + '</div><div style="font-size:12px;color:#CFE3DA;margin-top:4px">done</div></div></div>' +
+    '<div style="flex:1;display:flex;flex-direction:column;gap:10px">' +
+    '<div class="stat"><span>Total tasbih</span><b>' + total + '</b></div><div class="rule"></div>' +
+    '<div class="stat"><span>Completed</span><b>' + done + '</b></div><div class="rule"></div>' +
+    '<div class="stat w"><span>Pending</span><b>' + pend.length + '</b></div></div></div>';
+  if (!total) {
+    h += '<div class="card sub" style="text-align:center">Nothing scheduled today.</div>';
+  } else if (!pend.length) {
+    h += '<div class="card" style="background:#DCEBE4;border-color:#DCEBE4;color:#0F5A47;font-weight:700;text-align:center">All done for today</div>';
+  } else {
+    h += '<div style="display:flex;flex-direction:column;gap:10px"><h2>Still pending today</h2>';
+    pend.forEach(function (t) {
+      h += '<div class="prow"><div class="n"><b>' + esc(t.name) + '</b><span>' + t.count + ' times</span></div><button class="small" onclick="openToday(\'' + t.id + '\')">Open</button></div>';
+    });
+    h += '</div>';
+  }
+  var now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  var dim = new Date(y, m + 1, 0).getDate();
+  var cf = 0, cp = 0, cm = 0, strip = '';
+  for (var d = 1; d <= dim; d++) {
+    var dk = y + '-' + pad(m + 1) + '-' + pad(d), s = dayStat(dk);
+    if (s.st === 'full') cf++; else if (s.st === 'partial') cp++; else if (s.st === 'missed') cm++;
+    var cls = (s.st === 'pending' || s.st === 'none') ? '' : s.st;
+    if (dk > todayKey()) cls = 'future';
+    strip += '<div class="s ' + cls + (dk === todayKey() ? ' today' : '') + '"></div>';
+  }
+  h += '<div class="card" style="display:flex;flex-direction:column;gap:12px"><div class="row between"><h2>' + MONTHS[m] + '</h2><button class="link" onclick="go(\'calendar\')">Full calendar</button></div>' +
+    '<div class="strip">' + strip + '</div>' +
+    '<div class="legend"><span><i class="full"></i>' + cf + ' complete</span><span><i class="partial"></i>' + cp + ' partial</span><span><i class="missed"></i>' + cm + ' missed</span></div></div>';
+  return h;
+}
+
+function openToday(id) {
+  var act = activeOn(todayKey());
+  for (var i = 0; i < act.length; i++) if (act[i].id === id) todayIdx = i;
+  go('today');
+}
+function step(d) {
+  var n = activeOn(todayKey()).length; if (!n) return;
+  todayIdx = (todayIdx + d + n) % n; render();
+}
+function vToday() {
+  var k = todayKey(), act = activeOn(k);
+  var h = '<div class="row between" style="align-items:flex-end"><div><div class="sub">' + longDate(new Date()) + '</div><h1>Today</h1></div>';
+  if (act.length) h += '<div class="chip dark">' + act.filter(function (t) { return isDone(k, t.id); }).length + ' of ' + act.length + ' done</div>';
+  h += '</div>';
+  if (!act.length) {
+    return h + '<div class="card empty"><h2>Nothing scheduled today</h2><p>Add a tasbih in Manage, or check its repeat days.</p><button class="btn line" onclick="go(\'manage\')">Open Manage</button></div>';
+  }
+  todayIdx = Math.min(Math.max(todayIdx, 0), act.length - 1);
+  var t = act[todayIdx], done = isDone(k, t.id), n = S.progress[k + '|' + t.id] || 0;
+  h += '<div class="pager" id="pager"><div class="peek" style="left:0"></div><div class="peek" style="right:0"></div><div class="pcard">' +
+    '<div class="row between"><div class="sub" style="font-weight:600">Tasbih ' + (todayIdx + 1) + ' of ' + act.length + '</div>' +
+    (done ? '<span class="chip ok">Done today</span>' : '<span class="chip wait">Pending</span>') + '</div>' +
+    '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">' +
+    '<div class="pname">' + esc(t.name) + '</div><div class="pcount">' + t.count + '</div><div class="sub">times</div>' +
+    (t.time ? '<div class="sub row" style="gap:6px;margin-top:10px">' + svg(I.bell, 18, '#5A6660') + 'Reminder at ' + esc(t.time) + '</div>' : '') +
+    (!done && n > 0 ? '<div class="sub" style="margin-top:6px">Counted so far: ' + n + '</div>' : '') + '</div>' +
+    (done ? '' : '<button class="btn line" onclick="openCounter(\'' + t.id + '\')">' + svg(I.count, 20, '#0F5A47', 2) + 'Count along</button>') +
+    (done
+      ? '<button class="btn soft" onclick="toggleToday(\'' + t.id + '\')">' + svg(I.check, 22, '#0F5A47', 2) + 'Completed. Tap to undo</button>'
+      : '<button class="btn" onclick="toggleToday(\'' + t.id + '\')">' + svg(I.check, 22, '#fff', 2) + 'Mark completed for today</button>') +
+    '</div></div>';
+  var dots = act.map(function (x, i) { return '<div class="dot' + (i === todayIdx ? ' cur' : '') + (isDone(k, x.id) ? ' done' : '') + '"></div>'; }).join('');
+  h += '<div class="row between"><button class="round" style="width:48px;height:48px;border-radius:24px" aria-label="Previous tasbih" onclick="step(-1)">' + svg(I.left, 22, '#14201B', 2) + '</button><div class="dots">' + dots + '</div><button class="round" style="width:48px;height:48px;border-radius:24px" aria-label="Next tasbih" onclick="step(1)">' + svg(I.right, 22, '#14201B', 2) + '</button></div>';
+  var pend = act.filter(function (x) { return !isDone(k, x.id); }).map(function (x) { return esc(x.name); });
+  h += '<div class="sub" style="text-align:center;line-height:1.4">' + (pend.length ? 'Pending: ' + pend.join(', ') : 'All done for today') + '</div>';
+  return h;
+}
+function toggleToday(id) {
+  var k = todayKey();
+  setDone(k, id, !isDone(k, id));
+  if (isDone(k, id)) vib(40);
+  render();
+}
+
+function vCalendar() {
+  var first = new Date(vm.y, vm.m, 1).getDay(), dim = new Date(vm.y, vm.m + 1, 0).getDate();
+  var t = todayKey();
+  var h = '<div class="row between"><h1 style="font-size:26px">' + MONTHS[vm.m] + ' ' + vm.y + '</h1><div class="row" style="gap:8px">' +
+    '<button class="round" aria-label="Previous month" onclick="monthStep(-1)">' + svg(I.left, 20, '#14201B', 2) + '</button>' +
+    '<button class="round" aria-label="Next month" onclick="monthStep(1)">' + svg(I.right, 20, '#14201B', 2) + '</button></div></div>';
+  h += '<div class="grid7">' + DS.map(function (x, i) { return '<div class="wd">' + DAYS[i].slice(0, 3) + '</div>'; }).join('');
+  for (var i = 0; i < first; i++) h += '<div></div>';
+  for (var d = 1; d <= dim; d++) {
+    var k = vm.y + '-' + pad(vm.m + 1) + '-' + pad(d), s = dayStat(k);
+    var cls = 'day';
+    if (s.st === 'full' || s.st === 'partial' || s.st === 'missed') cls += ' ' + s.st;
+    if (k === t) { cls += ' today'; if (s.st === 'full' || s.st === 'partial') cls += ' ' + s.st; }
+    if (k === selDate) cls += ' sel';
+    h += '<button class="' + cls + '" aria-label="' + d + ' ' + MONTHS[vm.m] + '" onclick="pickDay(\'' + k + '\')">' + d + '</button>';
+  }
+  h += '</div><div class="legend"><span><i class="full"></i>All done</span><span><i class="partial"></i>Partial</span><span><i class="missed"></i>Missed</span><span><i class="today"></i>Today</span></div>';
+  var sd = parseKey(selDate), ss = dayStat(selDate), canEdit = selDate <= t;
+  h += '<div class="card" style="padding:14px 16px 6px"><div class="row between" style="padding-bottom:6px"><h2 style="font-size:16px">' + longDate(sd) + '</h2>' +
+    (ss.act.length ? '<span class="sub" style="font-weight:600;font-size:13px">' + ss.done + ' of ' + ss.act.length + ' done</span>' : '') + '</div>';
+  if (!ss.act.length) h += '<div class="sub" style="padding:10px 0 14px">Nothing scheduled this day.</div>';
+  ss.act.forEach(function (x) {
+    var dn = isDone(selDate, x.id);
+    h += '<button class="drow" ' + (canEdit ? 'onclick="calToggle(\'' + x.id + '\')"' : 'disabled style="cursor:default"') + '>' +
+      '<span class="tick ' + (dn ? 'on' : 'off') + '">' + (dn ? svg(I.check, 14, '#fff', 3) : '') + '</span>' +
+      '<span style="flex:1;min-width:0;font-size:15px;font-weight:500">' + esc(x.name) + '</span><span class="sub" style="font-size:13px">' + x.count + '</span>' +
+      '<span style="width:64px;text-align:right;font-size:13px;font-weight:700;color:' + (dn ? '#0F5A47' : '#8A6A1F') + '">' + (dn ? 'Done' : (canEdit ? 'Pending' : '')) + '</span></button>';
+  });
+  if (canEdit && ss.act.length && selDate < t) h += '<div class="sub" style="font-size:12px;padding:6px 0 10px">Tap a row to fix a past day.</div>';
+  h += '</div>';
+  return h;
+}
+function monthStep(d) { vm.m += d; if (vm.m < 0) { vm.m = 11; vm.y--; } if (vm.m > 11) { vm.m = 0; vm.y++; } render(); }
+function pickDay(k) { selDate = k; render(); }
+function calToggle(id) { setDone(selDate, id, !isDone(selDate, id)); render(); }
+
+function fmtDays(days) {
+  if (days.length === 7) return 'Every day';
+  if (days.length === 1) return DAYS[days[0]] + 's only';
+  return days.slice().sort().map(function (d) { return DAYS[d].slice(0, 3); }).join(' ');
+}
+function vManage() {
+  var h = '<div class="row between"><h1>Manage</h1><button class="btn" style="width:auto;min-height:48px;padding:0 18px 0 14px;border-radius:24px;font-size:15px;gap:6px" onclick="editTasbih(null)">' + svg(I.plus, 20, '#fff', 2.2) + 'Add tasbih</button></div>';
+  if (!S.tasbih.length) h += '<div class="card empty"><p>No tasbih yet. Tap Add tasbih to create your first one.</p></div>';
+  S.tasbih.forEach(function (t) {
+    h += '<button class="mrow" onclick="editTasbih(\'' + t.id + '\')"><div style="flex:1;min-width:0"><b>' + esc(t.name) + '</b><span>' + t.count + ' times · ' + (t.time ? esc(t.time) : 'No reminder') + ' · ' + fmtDays(t.days) + '</span></div>' + svg(I.right, 20, '#5A6660', 2) + '</button>';
+  });
+  h += '<div class="card"><div class="row" style="gap:14px"><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:700">Evening check-in</div><div class="sub" style="font-size:13px;margin-top:3px;line-height:1.35">A reminder lists every tasbih still pending today.</div></div>' +
+    '<button class="sw ' + (S.settings.checkin ? 'on' : '') + '" role="switch" aria-checked="' + S.settings.checkin + '" aria-label="Evening check-in reminder" onclick="toggleCheckin()"><span></span></button></div>' +
+    (S.settings.checkin ? '<div class="field" style="margin-top:12px"><label for="cit">Check-in time</label><input class="inp" id="cit" type="time" value="' + esc(S.settings.checkinTime) + '" onchange="setCheckinTime(this.value)"></div>' : '') + '</div>';
+  return h;
+}
+function toggleCheckin() { S.settings.checkin = !S.settings.checkin; save(true); render(); }
+function setCheckinTime(v) { if (v) { S.settings.checkinTime = v; save(true); } }
+
+function editTasbih(id) {
+  var t = id ? S.tasbih.filter(function (x) { return x.id === id; })[0] : null;
+  draft = t ? { id: t.id, name: t.name, count: t.count, time: t.time || '', days: t.days.slice() }
+            : { id: null, name: '', count: 100, time: '', days: [0, 1, 2, 3, 4, 5, 6] };
+  confirmDel = false; view = 'edit'; render(true);
+}
+function vEdit() {
+  var h = '<div class="row" style="gap:12px"><button class="round" aria-label="Back to Manage" onclick="go(\'manage\')">' + svg(I.left, 20, '#14201B', 2) + '</button><h1 style="font-size:26px">' + (draft.id ? 'Edit tasbih' : 'New tasbih') + '</h1></div>';
+  h += '<div class="field"><label for="nm">Name</label><input class="inp" id="nm" type="text" value="' + esc(draft.name) + '" oninput="draft.name=this.value" placeholder="e.g. Istighfar" autocomplete="off"></div>';
+  h += '<div class="field"><div class="lbl">Count per day</div><div class="row" style="gap:12px"><button class="step" aria-label="Decrease count" onclick="bump(-10)">' + svg(I.minus, 20, '#14201B', 2.2) + '</button>' +
+    '<input class="inp" id="cn" type="number" inputmode="numeric" min="1" value="' + esc(draft.count) + '" oninput="draft.count=this.value" style="text-align:center;font-size:26px;font-weight:700;color:#0F5A47" aria-label="Count per day">' +
+    '<button class="step" aria-label="Increase count" onclick="bump(10)">' + svg(I.plus, 20, '#14201B', 2.2) + '</button></div>' +
+    '<div class="row" style="gap:8px">' + [33, 100, 150, 300].map(function (n) { return '<button class="preset' + (parseInt(draft.count, 10) === n ? ' on' : '') + '" onclick="preset(' + n + ')">' + n + '</button>'; }).join('') + '</div></div>';
+  h += '<div class="field"><label for="tm">Reminder time</label><div class="row" style="gap:10px"><input class="inp" id="tm" type="time" value="' + esc(draft.time) + '" onchange="draft.time=this.value">' +
+    (draft.time ? '<button class="link" onclick="clearTime()">No reminder</button>' : '') + '</div></div>';
+  h += '<div class="field"><div class="lbl">Repeat on</div><div class="row between">' + DS.map(function (l, i) {
+    return '<button class="dchip' + (draft.days.indexOf(i) >= 0 ? ' on' : '') + '" aria-pressed="' + (draft.days.indexOf(i) >= 0) + '" aria-label="' + DAYS[i] + '" onclick="toggleDay(' + i + ')">' + l + '</button>';
+  }).join('') + '</div></div>';
+  h += '<div style="display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:6px"><button class="btn" onclick="saveDraft()">Save</button>' +
+    (draft.id ? '<button class="link" style="color:#A33A24;min-height:48px" onclick="delTasbih()">' + (confirmDel ? 'Tap again to delete' : 'Delete tasbih') + '</button>' : '') + '</div>';
+  return h;
+}
+function bump(d) { draft.count = Math.max(1, (parseInt(draft.count, 10) || 0) + d); render(); }
+function preset(n) { draft.count = n; render(); }
+function clearTime() { draft.time = ''; render(); }
+function toggleDay(i) { var p = draft.days.indexOf(i); if (p >= 0) draft.days.splice(p, 1); else draft.days.push(i); render(); }
+function saveDraft() {
+  var name = draft.name.trim(), count = parseInt(draft.count, 10);
+  if (!name) { toast('Enter a name'); return; }
+  if (!(count > 0)) { toast('Enter a count above 0'); return; }
+  if (!draft.days.length) { toast('Pick at least one day'); return; }
+  var days = draft.days.slice().sort();
+  if (draft.id) {
+    var t = S.tasbih.filter(function (x) { return x.id === draft.id; })[0];
+    t.name = name; t.count = count; t.time = draft.time; t.days = days;
+  } else {
+    S.tasbih.push({ id: 't' + Date.now().toString(36), name: name, count: count, time: draft.time, days: days, created: todayKey() });
+  }
+  save(true); view = 'manage'; render(true);
+}
+function delTasbih() {
+  if (!confirmDel) { confirmDel = true; render(); return; }
+  S.tasbih = S.tasbih.filter(function (x) { return x.id !== draft.id; });
+  save(true); view = 'manage'; render(true);
+}
+
+/* ---------- counter ---------- */
+function openCounter(id) {
+  counter = { id: id };
+  try { if (window.Android) Android.setCounterMode(true); } catch (e) {}
+  render();
+}
+function closeCounter() {
+  counter = null;
+  try { if (window.Android) Android.setCounterMode(false); } catch (e) {}
+  render();
+}
+function counterTasbih() { return counter ? S.tasbih.filter(function (x) { return x.id === counter.id; })[0] : null; }
+function inc(d) {
+  var t = counterTasbih(); if (!t) return;
+  var pk = todayKey() + '|' + t.id;
+  var n = Math.max(0, (S.progress[pk] || 0) + d);
+  S.progress[pk] = n;
+  if (d > 0) vib(n === t.count ? 250 : 15);
+  save(false); render();
+}
+function resetCount() { var t = counterTasbih(); if (t) { delete S.progress[todayKey() + '|' + t.id]; save(false); render(); } }
+function finishCounter() { var t = counterTasbih(); if (!t) return; setDone(todayKey(), t.id, true); vib(60); closeCounter(); }
+function vCounter() {
+  var t = counterTasbih(); if (!t) return '';
+  var n = S.progress[todayKey() + '|' + t.id] || 0;
+  return '<div id="counter"><div class="row between" style="gap:12px"><div style="font-size:18px;font-weight:700;min-width:0">' + esc(t.name) + '</div><button onclick="closeCounter()" style="min-height:44px;padding:0 16px;border-radius:12px;border:2px solid #CFE3DA;background:transparent;color:#fff;font-weight:600">Close</button></div>' +
+    '<button class="tap" onclick="inc(1)" aria-label="Add one"><div class="big">' + n + '</div><div class="of">of ' + t.count + '</div><div class="of" style="font-size:14px;margin-top:14px">Tap anywhere or press volume down</div></button>' +
+    (n >= t.count ? '<button class="fin" onclick="finishCounter()">Target reached. Mark completed</button>' : '') +
+    '<div class="tb"><button onclick="inc(-1)">Minus 1</button><button onclick="resetCount()">Reset</button></div></div>';
+}
+
+/* ---------- render ---------- */
+function render(top) {
+  var main = document.querySelector('main');
+  var sc = main ? main.scrollTop : 0;
+  var body = view === 'home' ? vHome() : view === 'today' ? vToday() : view === 'calendar' ? vCalendar() : view === 'manage' ? vManage() : vEdit();
+  var nav = '';
+  if (view !== 'edit') {
+    var tabs = [['home', 'Home', I.home], ['today', 'Today', I.today], ['calendar', 'Calendar', I.cal], ['manage', 'Manage', I.list]];
+    nav = '<nav aria-label="Main">' + tabs.map(function (t) {
+      return '<button class="' + (view === t[0] ? 'on' : '') + '" onclick="go(\'' + t[0] + '\')"><span class="pill">' + svg(t[2], 22) + '</span>' + t[1] + '</button>';
+    }).join('') + '</nav>';
+  }
+  document.getElementById('app').innerHTML = '<main>' + body + '</main>' + nav + (counter ? vCounter() : '');
+  var m2 = document.querySelector('main'); if (m2 && !top) m2.scrollTop = sc;
+  var p = document.getElementById('pager');
+  if (p) {
+    var x0 = null;
+    p.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    p.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+    });
+  }
+}
+
+window.onVolumeKey = function () { if (counter) inc(1); };
+window.handleBack = function () {
+  if (counter) { closeCounter(); return true; }
+  if (view === 'edit') { go('manage'); return true; }
+  if (view !== 'home') { go('home'); return true; }
+  return false;
+};
+window.refresh = function () {
+  if (lastDay !== todayKey()) { lastDay = todayKey(); selDate = lastDay; if (view !== 'edit') render(); }
+};
+document.addEventListener('visibilitychange', function () { if (!document.hidden) window.refresh(); });
+
+/* drop old counter progress, then sync once so alarms exist from the first launch */
+(function () {
+  var t = todayKey();
+  Object.keys(S.progress).forEach(function (k) { if (k.indexOf(t + '|') !== 0) delete S.progress[k]; });
+  save(true);
+  render(true);
+})();
+</script>
+</body>
+</html>
